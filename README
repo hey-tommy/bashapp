@@ -13,6 +13,9 @@ you, no fewer than 32 bytes long.
 (Note: it's recommended to let bashap create the key for you since every time you
 compile, it will create a new, pseudo-randomly generated value of variable length.)
 
+bashapp will also pass the path to the parent directory containing the executable
+as a the first positional arugment to the script, accessible in the script via $1.
+
 
 Compiling
 

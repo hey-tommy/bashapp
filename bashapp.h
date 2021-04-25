@@ -68,12 +68,20 @@ char *xor_enc() {\n\
     }\n\
     return ret;\n\
 }\n\
-int main() {\n\
+int main(int argc, char *argv[]) {\n\
     int i;\n\
     char *src;\n\
     int fd[2];\n\
     pid_t pid;\n\
     src = xor_enc();\n\
+    \n\
+    // Get current executable path \n\
+    char *scriptDirectory = strdup(argv[0]);\n\
+    // Get the position of the last slash in the path \n\
+    size_t lastSlashIndex = strrchr(scriptDirectory, '/') - scriptDirectory;\n\
+    // Discard the path after the slash (including the slash) \n\
+    scriptDirectory[lastSlashIndex] = '\\0';\n\
+    \n\
     if (pipe(fd) < 0)\n\
         return EXIT_FAILURE;\n\
     if ((pid = fork()) < 0)\n\
@@ -81,7 +89,7 @@ int main() {\n\
     else if (pid != 0) {\n\
         close(fd[1]);\n\
         dup2(fd[0], STDIN_FILENO);\n\
-        execlp(\"bash\", \"bash\", (char *)0);\n\
+        execlp(\"bash\", \"bash\", \"-s\", \"-\", scriptDirectory, (char *)0);\n\
     } else {\n\
         close(fd[0]);\n\
         write(fd[1], src, SCR_SIZE);\n\
