@@ -93,7 +93,7 @@ int main() {\n\
 #define MAKE_APP "#!/bin/bash\n\
 rm -fr ___APPNAME___.app\n\
 mkdir -p ___APPNAME___.app/Contents/MacOS/\n\
-gcc ___APPNAME___.c -o ___APPNAME___.app/Contents/MacOS/___APPNAME___\n\
+clang -arch x86_64 -arch arm64 ___APPNAME___.c -o ___APPNAME___.app/Contents/MacOS/___APPNAME___\n\
 chmod a+x ___APPNAME___.app/Contents/MacOS/___APPNAME___\n"
 
 #define MAKE_ICON "#!/bin/bash\n\
