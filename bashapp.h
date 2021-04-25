@@ -35,6 +35,11 @@ SOFTWARE.
 
 #define DEFAULT_KEY_LEN 32
 
+// Define the name of the Bash variable, which will hold the parent directory 
+// path of the executable binary. The variable definition will be inserted at 
+// runtime into the script body on the script's 2nd line.
+#define PARENT_DIR_BASH_VAR_NAME "scriptDirectory"
+
 #define USAGE "\n\
 Usage: bashapp -k <keyfile> -i <icon> PATH_TO_BASH_SCRIPT APPNAME\n\
 \n\
@@ -68,12 +73,35 @@ char *xor_enc() {\n\
     }\n\
     return ret;\n\
 }\n\
-int main() {\n\
+int main(int argc, char *argv[]) {\n\
     int i;\n\
     char *src;\n\
     int fd[2];\n\
     pid_t pid;\n\
     src = xor_enc();\n\
+    \n\
+    // Get current executable path \n\
+    char *scriptDirectory = strdup(argv[0]);\n\
+    // Get the position of the last slash in the path \n\
+    size_t lastSlashIndex = strrchr(scriptDirectory, '/') - scriptDirectory;\n\
+    // Discard the path after the slash (including the slash) \n\
+    scriptDirectory[lastSlashIndex] = '\\0';\n\
+    size_t scriptDirectoryLength = strlen(scriptDirectory);\n\
+    // Get the length of the first line, including the \\n char \n\
+    size_t firstLineLength = strchr(src, '\\n') - src + 2;\n\
+    // Build the string for the line holding the variable definition \n\
+    char scriptDirectoryLine[4096] = \"___PARENT_DIR_BASH_VAR_NAME___=\\\"\";\n\
+    strlcat(scriptDirectoryLine, scriptDirectory, strlen(scriptDirectoryLine) + scriptDirectoryLength + 1);\n\
+    strlcat(scriptDirectoryLine, \"\\\"\\n\", strlen(scriptDirectoryLine) + 3);\n\
+    size_t scriptDirectoryLineLength = strlen(scriptDirectoryLine);\n\
+    // Declare & allocate mem for the mofified script string \n\
+    char *newsrc = calloc(SCR_SIZE + scriptDirectoryLineLength + 2, sizeof(char));\n\
+    // Build the modified script source \n\
+    strlcpy(newsrc, src, firstLineLength);\n\
+    strlcat(newsrc, scriptDirectoryLine, firstLineLength + scriptDirectoryLineLength);\n\
+    strlcat(newsrc, &src[firstLineLength-1], SCR_SIZE + scriptDirectoryLineLength + 1);\n\
+    \n\
+    free(src); src = NULL;\n\
     if (pipe(fd) < 0)\n\
         return EXIT_FAILURE;\n\
     if ((pid = fork()) < 0)\n\
@@ -84,9 +112,9 @@ int main() {\n\
         execlp(\"bash\", \"bash\", (char *)0);\n\
     } else {\n\
         close(fd[0]);\n\
-        write(fd[1], src, SCR_SIZE);\n\
+        write(fd[1], newsrc, SCR_SIZE + scriptDirectoryLineLength + 1);\n\
     }\n\
-    free(src); src = NULL;\n\
+    free(newsrc); newsrc = NULL;\n\
     return EXIT_SUCCESS;\n\
 }\n"
 

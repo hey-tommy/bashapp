@@ -13,6 +13,10 @@ you, no fewer than 32 bytes long.
 (Note: it's recommended to let bashap create the key for you since every time you
 compile, it will create a new, pseudo-randomly generated value of variable length.)
 
+bashapp will also pass the path to the parent directory containing the executable
+at runtime by embedding a variable definition directly into the script body.
+(It gets inserted on the second line of the script, right below the shebang line.)
+ 
 
 Compiling
 

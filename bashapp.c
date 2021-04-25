@@ -90,6 +90,7 @@ int main(int argc, char *argv[]) {
 		goto done;
 	}
 
+	// Hex-encode script
     tmp = src_hex_array(script_e, i);
 	if (tmp == NULL) {
 		goto done;
@@ -101,11 +102,13 @@ int main(int argc, char *argv[]) {
 		goto done;
 	}
 
+    // Hex-encode key
     tmp3 = src_hex_array(key, key_len);
 	if (tmp3 == NULL) {
 		goto done;
 	}
 
+    // Insert key into source
     tmp = replace(tmp2, "___KEY___", tmp3);
     cats(&tmp2, NULL);
     cats(&tmp3, NULL);
@@ -113,15 +116,24 @@ int main(int argc, char *argv[]) {
 		goto done;
 	}
 
+	// Insert script length into source
     tmp2 = replace(tmp, "___BASH_SCR_SIZE___", sz);
     cats(&tmp, NULL);
 	if (tmp2 == NULL) {
 		goto done;
 	}
 
+	// Insert key length into source
     sprintf(sz, "%d", key_len);
-    src = replace(tmp2, "___KEY_LEN___", sz);
+    tmp3 = replace(tmp2, "___KEY_LEN___", sz);
     cats(&tmp2, NULL);
+	if (tmp3 == NULL) {
+		goto done;
+	}
+	
+	// Insert parent directory Bash variable name into source (see .h for definition)
+    src = replace(tmp3, "___PARENT_DIR_BASH_VAR_NAME___", PARENT_DIR_BASH_VAR_NAME);
+    cats(&tmp3, NULL);
 	if (src == NULL) {
 		goto done;
 	}
